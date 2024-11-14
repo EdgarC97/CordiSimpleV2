@@ -60,12 +60,6 @@ jobs:
         run: |
           php artisan migrate --force
 
-      # Paso 8: Configurar caché y rutas
-      - name: Cache config and routes
-        run: |
-          php artisan config:cache
-          php artisan route:cache
-          php artisan optimize
 
       # Paso 9: Desplegar a Render (ya es automático)
       # Render maneja el despliegue automáticamente, así que no necesitas un paso extra para esto.
