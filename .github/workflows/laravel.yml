@@ -29,7 +29,12 @@ jobs:
           curl -sS https://getcomposer.org/installer | php
           php composer.phar install --no-interaction --prefer-dist
 
-      # Paso 4: Crear el archivo .env de pruebas con los secretos (si es necesario)
+      # Paso 4: Instalar dependencias de npm
+      - name: Install NPM dependencies
+        run: |
+          npm install
+
+      # Paso 5: Crear el archivo .env de pruebas con los secretos (si es necesario)
       - name: Set up .env file
         run: |
           echo "APP_KEY=${{ secrets.APP_KEY }}" >> .env
@@ -43,12 +48,12 @@ jobs:
           echo "APP_ENV=testing" >> .env  # Establecer el entorno como testing
           # Agregar otros secretos si es necesario
 
-      # Paso 5: Configurar MySQL (Docker)
+      # Paso 6: Configurar MySQL (Docker)
       - name: Set up MySQL (Docker)
         run: |
           docker run --name mysql57 -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=laravel_db -e MYSQL_USER=user -e MYSQL_PASSWORD=password -p 3306:3306 -d mysql:5.7
 
-      # Paso 6: Esperar a que MySQL esté listo
+      # Paso 7: Esperar a que MySQL esté listo
       - name: Wait for MySQL to be ready
         run: |
           until mysqladmin ping -h "127.0.0.1" --silent; do
@@ -56,12 +61,12 @@ jobs:
             sleep 5
           done
 
-      # Paso 7: Ejecutar pruebas con PHPUnit en la carpeta de Event
+      # Paso 8: Ejecutar pruebas con PHPUnit en la carpeta de Event
       - name: Run PHPUnit tests (Event)
         run: |
           ./vendor/bin/phpunit tests/Event
 
-      # Paso 8: Desplegar al servidor (usando SSH)
+      # Paso 9: Desplegar al servidor (usando SSH)
       - name: Deploy to Server
         run: |
           ssh -o StrictHostKeyChecking=no user@yourserver.com "cd /path/to/your/project && git pull && php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan optimize"
