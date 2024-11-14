@@ -1,0 +1,61 @@
+name: Laravel CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Paso 1: Hacer checkout del código
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Paso 2: Configurar PHP
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'  # Ajusta la versión de PHP según tu proyecto
+
+      # Paso 3: Instalar dependencias de Composer
+      - name: Install Composer dependencies
+        run: |
+          curl -sS https://getcomposer.org/installer | php
+          php composer.phar install --no-interaction --prefer-dist
+
+      # Paso 4: Configurar la base de datos (MySQL en Docker)
+      - name: Set up MySQL (Docker)
+        uses: docker://mysql:5.7
+        with:
+          entrypoint: "--default-authentication-plugin=mysql_native_password"
+        env:
+          MYSQL_ROOT_PASSWORD: root_password
+          MYSQL_DATABASE: laravel_db
+          MYSQL_USER: user
+          MYSQL_PASSWORD: password
+
+      # Paso 5: Esperar a que MySQL esté listo
+      - name: Wait for MySQL to be ready
+        run: |
+          until mysqladmin ping -h "127.0.0.1" --silent; do
+            echo "Esperando a que MySQL esté listo..."
+            sleep 5
+          done
+
+      # Paso 6: Ejecutar pruebas con PHPUnit
+      - name: Run PHPUnit tests
+        run: |
+          ./vendor/bin/phpunit
+
+      # Paso 7: Desplegar al servidor (usando SSH)
+      - name: Deploy to Server
+        run: |
+          ssh -o StrictHostKeyChecking=no user@yourserver.com "cd /path/to/your/project && git pull && php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan optimize"
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
