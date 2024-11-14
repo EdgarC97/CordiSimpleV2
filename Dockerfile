@@ -14,30 +14,35 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd zip intl pdo pdo_mysql
 
-# Instalar Node.js y npm (la versión de Node.js puede ser ajustada a la que necesites)
-RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - \
-    && apt-get install -y nodejs
+# Instalar NGINX
+RUN apt-get install -y nginx
 
 # Configuración de directorios
 WORKDIR /var/www
 
-# Instalar Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
 # Copiar el código fuente
 COPY . .
+
+# Instalar Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Instalar dependencias de Composer
 RUN composer install --no-dev --optimize-autoloader
 
 # Instalar dependencias de npm
+RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - \
+    && apt-get install -y nodejs
+
 RUN npm install
 
 # Ejecutar Vite para compilar assets
 RUN npm run build
 
-# Exponer el puerto 9000 para el contenedor PHP-FPM
-EXPOSE 9000
+# Copiar la configuración de NGINX al contenedor
+COPY nginx/default.conf /etc/nginx/sites-available/default
 
-# Configurar el contenedor para usar PHP-FPM
-CMD ["php-fpm"]
+# Exponer el puerto 80
+EXPOSE 80
+
+# Iniciar NGINX y PHP-FPM en el contenedor
+CMD service nginx start && php-fpm
