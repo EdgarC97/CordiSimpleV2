@@ -29,12 +29,13 @@ jobs:
           curl -sS https://getcomposer.org/installer | php
           php composer.phar install --no-interaction --prefer-dist
 
-      # Paso 4: Instalar dependencias de npm
-      - name: Install NPM dependencies
+      # Paso 4: Instalar dependencias de npm con Node.js 20
+      - name: Install Node.js and NPM dependencies
         run: |
-          curl -sL https://deb.nodesource.com/setup_16.x | bash -
-          apt-get install -y nodejs
-          npm install
+          curl -sL https://deb.nodesource.com/setup_20.x | sudo bash -  # Instalar Node.js 20 LTS
+          sudo apt-get update
+          sudo apt-get install -y nodejs  # Instalar Node.js
+          npm install  # Instalar dependencias de npm
 
       # Paso 5: Generar los activos con Vite
       - name: Build assets with Vite
