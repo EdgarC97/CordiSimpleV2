@@ -21,7 +21,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'  # Ajusta la versión de PHP según tu proyecto
+          php-version: '8.2'
 
       # Paso 3: Instalar dependencias de Composer
       - name: Install Composer dependencies
@@ -32,8 +32,6 @@ jobs:
       # Paso 4: Configurar MySQL (sin modificar el entrypoint)
       - name: Set up MySQL (Docker)
         uses: docker://mysql:5.7
-docker://mysql:5.7
-
         with:
           env:
             MYSQL_ROOT_PASSWORD: root_password
