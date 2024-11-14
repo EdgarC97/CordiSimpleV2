@@ -10,10 +10,8 @@ Route::get('/dashboard', [EventController::class, 'indexDashboard'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-Route::middleware(['auth'])->group(function () {
-    Route::get('/', [EventController::class, 'indexWelcome'])
-        ->name('welcome');
-});
+Route::get('/', [EventController::class, 'indexWelcome'])
+    ->name('welcome');
 
 Route::middleware(['auth', CheckIfAdmin::class])->group(function () {
     Route::get('events', [EventController::class, 'index'])->name('events.index');

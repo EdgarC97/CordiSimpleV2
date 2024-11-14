@@ -74,7 +74,7 @@ class EventEditTest extends TestCase
         $updatedEventData = [
             'name' => 'Evento Actualizado',
             'description' => 'Descripción actualizada del evento',
-            'date' => '2024-11-10',
+            'date' => '2025-11-10',
             'time' => '16:00',
             'location' => 'Nuevo Centro de Convenciones',
             'max_capacity' => 150,
