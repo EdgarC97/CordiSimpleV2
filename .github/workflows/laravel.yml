@@ -29,10 +29,17 @@ jobs:
           curl -sS https://getcomposer.org/installer | php
           php composer.phar install --no-interaction --prefer-dist
 
-      # Paso 4: Generar la clave de la aplicación
-      - name: Generate app key
+      # Paso 4: Crear el archivo .env de pruebas con los secretos (si es necesario)
+      - name: Set up .env file
         run: |
-          php artisan key:generate --env=testing
+          echo "APP_KEY=${{ secrets.APP_KEY }}" >> .env
+          echo "DB_CONNECTION=${{ secrets.DB_CONNECTION }}" >> .env
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+          echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> .env
+          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          # Agregar otros secretos necesarios aquí
 
       # Paso 5: Configurar MySQL (Docker)
       - name: Set up MySQL (Docker)
