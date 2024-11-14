@@ -39,7 +39,9 @@ jobs:
           echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> .env
           echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-          # Agregar otros secretos necesarios aquí
+          echo "APP_URL=${{ secrets.APP_URL }}" >> .env
+          echo "APP_ENV=testing" >> .env  # Establecer el entorno como testing
+          # Agregar otros secretos si es necesario
 
       # Paso 5: Configurar MySQL (Docker)
       - name: Set up MySQL (Docker)
@@ -54,8 +56,8 @@ jobs:
             sleep 5
           done
 
-      # Paso 7: Ejecutar pruebas con PHPUnit
-      - name: Run PHPUnit tests
+      # Paso 7: Ejecutar pruebas con PHPUnit en la carpeta de Event
+      - name: Run PHPUnit tests (Event)
         run: |
           ./vendor/bin/phpunit tests/Event
 
