@@ -1,7 +1,7 @@
 # Usamos una imagen base con PHP
 FROM php:8.2-fpm
 
-# Instalar dependencias necesarias
+# Instalar dependencias necesarias para PHP
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
@@ -13,6 +13,10 @@ RUN apt-get update && apt-get install -y \
     curl \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd zip intl pdo pdo_mysql
+
+# Instalar Node.js y npm (la versión de Node.js puede ser ajustada a la que necesites)
+RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - \
+    && apt-get install -y nodejs
 
 # Configuración de directorios
 WORKDIR /var/www
