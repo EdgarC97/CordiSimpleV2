@@ -2,7 +2,7 @@
     "version": 2,
     "builds": [
       {
-        "src": "public/**",
+        "src": "public/**/*",
         "use": "@vercel/static"
       },
       {
@@ -11,6 +11,10 @@
       }
     ],
     "routes": [
+      {
+        "src": "/(build/.*)",
+        "dest": "/$1"
+      },
       {
         "src": "/(.*)",
         "dest": "/index.php"
