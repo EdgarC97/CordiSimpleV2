@@ -63,7 +63,7 @@ jobs:
         run: |
           until mysqladmin ping -h "127.0.0.1" --silent; do
             echo "Esperando a que MySQL esté listo..."
-            sleep 5
+            sleep 30
           done
 
       # Paso 9: Ejecutar pruebas con PHPUnit en la carpeta de Event
