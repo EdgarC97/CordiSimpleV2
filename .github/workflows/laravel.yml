@@ -29,13 +29,17 @@ jobs:
           curl -sS https://getcomposer.org/installer | php
           php composer.phar install --no-interaction --prefer-dist
 
-      # Paso 4: Configurar MySQL (Docker)
+      # Paso 4: Generar la clave de la aplicación
+      - name: Generate app key
+        run: |
+          php artisan key:generate --env=testing
+
+      # Paso 5: Configurar MySQL (Docker)
       - name: Set up MySQL (Docker)
         run: |
           docker run --name mysql57 -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=laravel_db -e MYSQL_USER=user -e MYSQL_PASSWORD=password -p 3306:3306 -d mysql:5.7
-        # No usamos `with` para las variables de entorno, sino que las pasamos directamente en el comando `docker run`.
 
-      # Paso 5: Esperar a que MySQL esté listo
+      # Paso 6: Esperar a que MySQL esté listo
       - name: Wait for MySQL to be ready
         run: |
           until mysqladmin ping -h "127.0.0.1" --silent; do
@@ -43,12 +47,12 @@ jobs:
             sleep 5
           done
 
-      # Paso 6: Ejecutar pruebas con PHPUnit
+      # Paso 7: Ejecutar pruebas con PHPUnit
       - name: Run PHPUnit tests
         run: |
           ./vendor/bin/phpunit
 
-      # Paso 7: Desplegar al servidor (usando SSH)
+      # Paso 8: Desplegar al servidor (usando SSH)
       - name: Deploy to Server
         run: |
           ssh -o StrictHostKeyChecking=no user@yourserver.com "cd /path/to/your/project && git pull && php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan optimize"
