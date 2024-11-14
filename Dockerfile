@@ -41,6 +41,10 @@ RUN npm run build
 # Copiar la configuración de NGINX al contenedor
 COPY nginx/default.conf /etc/nginx/sites-available/default
 
+# Asegurarse de que los directorios tengan permisos adecuados
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
+    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+
 # Exponer el puerto 80
 EXPOSE 80
 
