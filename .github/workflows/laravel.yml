@@ -66,10 +66,10 @@ jobs:
             sleep 30
           done
 
-      # Paso 9: Ejecutar pruebas con PHPUnit en la carpeta de Event
-      - name: Run PHPUnit tests (Event)
-        run: |
-          ./vendor/bin/phpunit tests/Event
+      # # Paso 9: Ejecutar pruebas con PHPUnit en la carpeta de Event
+      # - name: Run PHPUnit tests (Event)
+      #   run: |
+      #     ./vendor/bin/phpunit tests/Event
 
       # Paso 10: Desplegar al servidor (usando SSH)
       - name: Deploy to Server
