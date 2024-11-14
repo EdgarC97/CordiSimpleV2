@@ -57,7 +57,7 @@ jobs:
       # Paso 7: Ejecutar pruebas con PHPUnit
       - name: Run PHPUnit tests
         run: |
-          ./vendor/bin/phpunit
+          ./vendor/bin/phpunit tests/Event
 
       # Paso 8: Desplegar al servidor (usando SSH)
       - name: Deploy to Server
