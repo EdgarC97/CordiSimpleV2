@@ -63,7 +63,7 @@ jobs:
           USERNAME: ${{ secrets.USERNAME }}
           PASSWORD: ${{ secrets.PASSWORD }}
         run: |
-        # Instalar sshpass para pasar la contraseña
+          # Instalar sshpass para pasar la contraseña
           sudo apt-get install -y sshpass
           
           # Verificar la conexión SSH
@@ -104,4 +104,3 @@ jobs:
           sudo chown -R www-data:www-data storage bootstrap/cache
 
           EOF
-
