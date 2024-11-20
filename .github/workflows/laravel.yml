@@ -66,6 +66,9 @@ jobs:
           # Instalar sshpass para pasar la contraseña
           sudo apt-get install -y sshpass
 
+          # Verificar conexión SSH
+          echo "Verificando la conexión SSH con: $USERNAME@$HOST:$PORT"
+          
           # Conexión SSH usando sshpass (contraseña) y despliegue
           sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no -p $PORT $USERNAME@$HOST << 'EOF'
             # Comandos para desplegar tu aplicación
