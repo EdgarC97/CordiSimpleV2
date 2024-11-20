@@ -34,7 +34,8 @@ jobs:
         run: |
           curl -sL https://deb.nodesource.com/setup_20.x | sudo bash -  # Instalar Node.js 20 LTS
           sudo apt-get update
-          sudo apt-get install -y nodejs  # Instalar Node.js
+          sudo apt-get install -y nodejs npm  # Instalar Node.js y npm
+          npm -v  # Verificar si npm está instalado
           npm install  # Instalar dependencias de npm
 
       # Paso 5: Generar los activos con Vite
