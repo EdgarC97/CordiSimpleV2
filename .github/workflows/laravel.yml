@@ -72,15 +72,15 @@ jobs:
           # Conexión SSH usando sshpass (contraseña) y ejecutar el despliegue
           sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no -p $PORT $USERNAME@$HOST << 'EOF'
             # Cambiar a la ruta correcta del proyecto
-            cd /home/u976542190/domains/koalacordisimple.jcomtec.com/public_html
+            cd /home/u976542190/domains/koalacordisimple.jcomtec.com
 
             # Verificar si el repositorio Git está presente y actualizarlo
-            if [ -d ".git" ]; then
-              echo "Repositorio ya clonado, actualizando..."
-              git pull origin main
-            else
+            if [ ! -d ".git" ]; then
               echo "Clonando el repositorio Git..."
               git clone https://github.com/EdgarC97/CordiSimpleV2 .
+            else
+              echo "Repositorio ya clonado, actualizando..."
+              git pull origin main
             fi
 
             # Verificar que composer.json esté presente antes de instalar dependencias
