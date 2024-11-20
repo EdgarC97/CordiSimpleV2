@@ -56,7 +56,7 @@ jobs:
           echo "APP_ENV=production" >> .env  # Cambiar a producción para despliegue
 
       # Paso 7: Desplegar a Hostinger mediante SSH con contraseña
-      - name: Deploy to Hostinger via SSH (with password)
+        - name: Deploy to Hostinger via SSH (with password)
           env:
             HOST: ${{ secrets.HOST }}
             PORT: ${{ secrets.PORT }}
