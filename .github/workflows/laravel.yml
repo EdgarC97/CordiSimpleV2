@@ -57,67 +57,52 @@ jobs:
 
       # Paso 7: Desplegar a Hostinger mediante SSH con contraseña
       - name: Deploy to Hostinger via SSH (with password)
-        env:
-          HOST: ${{ secrets.HOST }}
-          PORT: ${{ secrets.PORT }}
-          USERNAME: ${{ secrets.USERNAME }}
-          PASSWORD: ${{ secrets.PASSWORD }}
-        run: |
-          # Instalar sshpass para pasar la contraseña
-          sudo apt-get install -y sshpass
-          
-          # Verificar si la conexión SSH funciona correctamente
-          echo "Verificando la conexión SSH con: $USERNAME@$HOST:$PORT"
-          
-          # Conexión SSH usando sshpass (contraseña) y ejecutar el despliegue
-          sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no -p $PORT $USERNAME@$HOST << 'EOF'
-          
-          # Verificación: Comprobar si la conexión SSH está funcionando correctamente
-          echo "Verificando el usuario actual en el servidor"
-          whoami  # Mostrar el usuario con el que estás conectado
+          env:
+            HOST: ${{ secrets.HOST }}
+            PORT: ${{ secrets.PORT }}
+            USERNAME: ${{ secrets.USERNAME }}
+            PASSWORD: ${{ secrets.PASSWORD }}
+          run: |
+            # Instalar sshpass para pasar la contraseña
+            sudo apt-get install -y sshpass
+            
+            # Verificar si la conexión SSH funciona correctamente
+            echo "Verificando la conexión SSH con: $USERNAME@$HOST:$PORT"
+            
+            # Conexión SSH usando sshpass (contraseña) y ejecutar el despliegue
+            sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no -p $PORT $USERNAME@$HOST << 'EOF'
+            
+            # Verificación: Comprobar si la conexión SSH está funcionando correctamente
+            echo "Verificando el usuario actual en el servidor"
+            whoami  # Mostrar el usuario con el que estás conectado
 
-          echo "Verificando si estamos en el directorio correcto"
-          pwd  # Mostrar el directorio de trabajo actual
+            echo "Verificando si estamos en el directorio correcto"
+            pwd  # Mostrar el directorio de trabajo actual
 
-          echo "Verificando si la variable de entorno $USERNAME está correctamente configurada"
-          echo "Usuario SSH: $USERNAME"
-          echo "Contraseña: $PASSWORD"
+            # Comprobar si la ruta existe
+            echo "Comprobando si la ruta ~/domains/koalacordisimple.jcomtec.com/public_html existe"
+            if [ ! -d "~/domains/koalacordisimple.jcomtec.com/public_html" ]; then
+              echo "El directorio no existe. Abortando el despliegue."
+              exit 1
+            fi
 
-          # Asegurarse de estar en el directorio correcto
-          cd ~/domains/koalacordisimple.jcomtec.com/public_html
-          
-          # Verificar si la conexión al servidor fue exitosa y si el directorio existe
-          if [ ! -d "~/domains/koalacordisimple.jcomtec.com/public_html" ]; then
-            echo "El directorio no existe o no tiene permisos. Abortando el despliegue."
-            exit 1
-          fi
+            # Asegurarse de estar en el directorio correcto
+            cd ~/domains/koalacordisimple.jcomtec.com/public_html
 
-          # Actualizar los archivos desde el repositorio
-          git pull origin main
+            # Verificar los permisos del directorio
+            echo "Verificando permisos del directorio public_html"
+            ls -la
 
-          # Instalar dependencias de Composer
-          composer install --no-dev --optimize-autoloader
+            # Continuar con el despliegue si todo es correcto
+            git pull origin main
+            composer install --no-dev --optimize-autoloader
+            npm install --production
+            npm run build
+            cp .env.example .env
+            php artisan key:generate
+            php artisan config:cache
+            php artisan route:cache
+            php artisan migrate --force
+            sudo chown -R www-data:www-data storage bootstrap/cache
 
-          # Instalar dependencias de npm en producción
-          npm install --production
-
-          # Generar los activos con Vite
-          npm run build
-
-          # Copiar el archivo .env de producción
-          cp .env.example .env
-
-          # Generar la clave de la aplicación de Laravel
-          php artisan key:generate
-
-          # Configurar cache de configuración y rutas
-          php artisan config:cache
-          php artisan route:cache
-
-          # Ejecutar migraciones si es necesario
-          php artisan migrate --force
-
-          # Ajustar permisos para las carpetas storage y bootstrap/cache
-          sudo chown -R www-data:www-data storage bootstrap/cache
-
-          EOF
+            EOF
