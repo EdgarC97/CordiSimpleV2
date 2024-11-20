@@ -70,49 +70,5 @@ jobs:
           echo "Verificando la conexión SSH con: $USERNAME@$HOST:$PORT"
           
           # Conexión SSH usando sshpass (contraseña) y ejecutar el despliegue
-          sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no -p $PORT $USERNAME@$HOST << 'EOF'
-            # Cambiar a la ruta correcta del proyecto
-            cd /home/u976542190/domains/koalacordisimple.jcomtec.com
-
-            # Verificar si el repositorio Git está presente y actualizarlo
-            if [ ! -d ".git" ]; then
-              echo "Clonando el repositorio Git..."
-              git clone https://github.com/EdgarC97/CordiSimpleV2 .
-            else
-              echo "Repositorio ya clonado, actualizando..."
-              git pull origin main
-            fi
-
-            # Verificar que composer.json esté presente antes de instalar dependencias
-            if [ -f "composer.json" ]; then
-              echo "Instalando dependencias de Composer..."
-              composer install --no-dev --optimize-autoloader
-            else
-              echo "Error: No se encontró composer.json en el repositorio"
-              exit 1
-            fi
-
-            # Verificar si el archivo artisan existe antes de ejecutar comandos
-            if [ -f "artisan" ]; then
-              # Ejecutar migraciones
-              php artisan migrate --force
-
-              # Optimizar el caché y limpiar vistas
-              php artisan config:cache
-              php artisan route:cache
-              php artisan view:clear
-            else
-              echo "Error: No se encontró el archivo artisan"
-              exit 1
-            fi
-
-            # Verificar si npm está instalado
-            if command -v npm &> /dev/null; then
-              # Instalar dependencias de npm
-              npm install --production
-              npm run build
-            else
-              echo "Error: npm no está instalado o no se pudo encontrar"
-              exit 1
-            fi
+          sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no -p $PORT $USERNAME@$HOST << 'EOF'     
           EOF
