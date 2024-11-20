@@ -56,29 +56,27 @@ jobs:
           echo "APP_ENV=production" >> .env  # Cambiar a producción para despliegue
 
       # Paso 7: Desplegar a Hostinger mediante SSH con contraseña
-      - name: Deploy to Hostinger via SSH (with password)
-        env:
-          HOST: ${{ secrets.HOST }}
-          PORT: ${{ secrets.PORT }}
-          USERNAME: ${{ secrets.USERNAME }}
-          PASSWORD: ${{ secrets.PASSWORD }}
-        run: |
-          # Instalar sshpass para pasar la contraseña
-          sudo apt-get install -y sshpass
+- name: Deploy to server
+  run: |
+    sshpass -p ${{ secrets.PASSWORD }} ssh -o StrictHostKeyChecking=no -p $PORT $USERNAME@$HOST << 'EOF'
+      # Cambiar a la ruta correcta del proyecto
+      cd /home/u976542190/domains/koalacordisimple.jcomtec.com/public_html
+      
+      # Si es necesario, actualiza el repositorio con git
+      git pull origin main
 
-          # Verificar conexión SSH
-          echo "Verificando la conexión SSH con: $USERNAME@$HOST:$PORT"
-          
-          # Conexión SSH usando sshpass (contraseña) y despliegue
-          sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no -p $PORT $USERNAME@$HOST << 'EOF'
-            # Comandos para desplegar tu aplicación
-            cd /ruta/a/tu/proyecto
-            git pull origin main
-            composer install --no-dev --optimize-autoloader
-            php artisan migrate --force
-            npm install --production
-            npm run build
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:clear
-          EOF
+      # Instalar dependencias con Composer
+      composer install --no-dev --optimize-autoloader
+
+      # Realizar migraciones de base de datos
+      php artisan migrate --force
+
+      # Instalar dependencias de npm y construir los archivos
+      npm install --production
+      npm run build
+
+      # Limpiar caché de Laravel
+      php artisan config:cache
+      php artisan route:cache
+      php artisan view:clear
+    EOF
