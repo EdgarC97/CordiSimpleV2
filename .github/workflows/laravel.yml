@@ -66,22 +66,39 @@ jobs:
           # Instalar sshpass para pasar la contraseña
           sudo apt-get install -y sshpass
           
-          # Verificar la conexión SSH
+          # Verificar si la conexión SSH funciona correctamente
           echo "Verificando la conexión SSH con: $USERNAME@$HOST:$PORT"
           
           # Conexión SSH usando sshpass (contraseña) y ejecutar el despliegue
           sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no -p $PORT $USERNAME@$HOST << 'EOF'
           
+          # Verificación: Comprobar si la conexión SSH está funcionando correctamente
+          echo "Verificando el usuario actual en el servidor"
+          whoami  # Mostrar el usuario con el que estás conectado
+
+          echo "Verificando si estamos en el directorio correcto"
+          pwd  # Mostrar el directorio de trabajo actual
+
+          echo "Verificando si la variable de entorno $USERNAME está correctamente configurada"
+          echo "Usuario SSH: $USERNAME"
+          echo "Contraseña: $PASSWORD"
+
           # Asegurarse de estar en el directorio correcto
           cd ~/domains/koalacordisimple.jcomtec.com/public_html
+          
+          # Verificar si la conexión al servidor fue exitosa y si el directorio existe
+          if [ ! -d "~/domains/koalacordisimple.jcomtec.com/public_html" ]; then
+            echo "El directorio no existe o no tiene permisos. Abortando el despliegue."
+            exit 1
+          fi
 
-          # Actualizar los archivos desde el repositorio (si es necesario)
+          # Actualizar los archivos desde el repositorio
           git pull origin main
 
           # Instalar dependencias de Composer
           composer install --no-dev --optimize-autoloader
 
-          # Instalar dependencias de npm (si tu aplicación las necesita en producción)
+          # Instalar dependencias de npm en producción
           npm install --production
 
           # Generar los activos con Vite
