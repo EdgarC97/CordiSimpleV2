@@ -27,14 +27,15 @@ jobs:
       - name: Install Composer dependencies
         run: |
           curl -sS https://getcomposer.org/installer | php
-          php composer.phar install --no-interaction --prefer-dist --no-dev --optimize-autoloader
+          php composer.phar install --no-interaction --prefer-dist
 
       # Paso 4: Instalar dependencias de npm con Node.js 20
       - name: Install Node.js and NPM dependencies
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-      - run: npm install  # Instalar dependencias de npm
+        run: |
+          curl -sL https://deb.nodesource.com/setup_20.x | sudo bash -  # Instalar Node.js 20 LTS
+          sudo apt-get update
+          sudo apt-get install -y nodejs  # Instalar Node.js
+          npm install  # Instalar dependencias de npm
 
       # Paso 5: Generar los activos con Vite
       - name: Build assets with Vite
@@ -44,9 +45,6 @@ jobs:
       # Paso 6: Crear el archivo .env de pruebas con los secretos (si es necesario)
       - name: Set up .env file
         run: |
-          if [ ! -f .env ]; then
-            touch .env
-          fi
           echo "APP_KEY=${{ secrets.APP_KEY }}" >> .env
           echo "DB_CONNECTION=${{ secrets.DB_CONNECTION }}" >> .env
           echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
@@ -66,7 +64,6 @@ jobs:
           PASSWORD: ${{ secrets.PASSWORD }}
         run: |
           # Instalar sshpass para pasar la contraseña
-          sudo apt-get update
           sudo apt-get install -y sshpass
           
           # Verificar la conexión SSH
@@ -81,23 +78,41 @@ jobs:
             if [ ! -d ".git" ]; then
               echo "Clonando el repositorio Git..."
               git clone https://github.com/EdgarC97/CordiSimpleV2 .
+            else
+              echo "Repositorio ya clonado, actualizando..."
+              git pull origin main
             fi
 
-            # Traer los últimos cambios
-            git pull origin main
+            # Verificar que composer.json esté presente
+            if [ -f "composer.json" ]; then
+              # Instalar dependencias de Composer
+              composer install --no-dev --optimize-autoloader
+            else
+              echo "Error: No se encontró composer.json en el repositorio"
+              exit 1
+            fi
 
-            # Instalar dependencias de Composer
-            composer install --no-dev --optimize-autoloader
+            # Verificar si el archivo artisan existe antes de ejecutar comandos
+            if [ -f "artisan" ]; then
+              # Ejecutar migraciones
+              php artisan migrate --force
 
-            # Ejecutar migraciones
-            php artisan migrate --force
+              # Optimizar el caché y limpiar vistas
+              php artisan config:cache
+              php artisan route:cache
+              php artisan view:clear
+            else
+              echo "Error: No se encontró el archivo artisan"
+              exit 1
+            fi
 
-            # Instalar dependencias de npm
-            npm install --production
-            npm run build
-
-            # Optimizar el caché y limpiar vistas
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:clear
+            # Verificar si npm está instalado
+            if command -v npm &> /dev/null; then
+              # Instalar dependencias de npm
+              npm install --production
+              npm run build
+            else
+              echo "Error: npm no está instalado o no se pudo encontrar"
+              exit 1
+            fi
           EOF
