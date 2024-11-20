@@ -66,7 +66,7 @@ jobs:
           # Instalar sshpass para pasar la contraseña
           sudo apt-get install -y sshpass
           
-          # Verificar la conexión SSH (esto es opcional, solo para depurar)
+          # Verificar la conexión SSH
           echo "Verificando la conexión SSH con: $USERNAME@$HOST:$PORT"
           
           # Conexión SSH usando sshpass (contraseña) y ejecutar el despliegue
@@ -74,12 +74,26 @@ jobs:
             # Cambiar a la ruta correcta del proyecto
             cd /home/u976542190/domains/koalacordisimple.jcomtec.com/public_html
 
-            # Comandos para desplegar tu aplicación
+            # Verificar si el repositorio Git está presente
+            if [ ! -d ".git" ]; then
+              echo "Clonando el repositorio Git..."
+              git clone https://github.com/EdgarC97/CordiSimpleV2 .
+            fi
+
+            # Traer los últimos cambios
             git pull origin main
+
+            # Instalar dependencias de Composer
             composer install --no-dev --optimize-autoloader
+
+            # Ejecutar migraciones
             php artisan migrate --force
+
+            # Instalar dependencias de npm
             npm install --production
             npm run build
+
+            # Optimizar el caché y limpiar vistas
             php artisan config:cache
             php artisan route:cache
             php artisan view:clear
