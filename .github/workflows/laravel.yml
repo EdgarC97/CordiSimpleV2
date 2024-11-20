@@ -74,18 +74,18 @@ jobs:
             # Cambiar a la ruta correcta del proyecto
             cd /home/u976542190/domains/koalacordisimple.jcomtec.com/public_html
 
-            # Verificar si el repositorio Git está presente
-            if [ ! -d ".git" ]; then
-              echo "Clonando el repositorio Git..."
-              git clone https://github.com/EdgarC97/CordiSimpleV2 .
-            else
+            # Verificar si el repositorio Git está presente y actualizarlo
+            if [ -d ".git" ]; then
               echo "Repositorio ya clonado, actualizando..."
               git pull origin main
+            else
+              echo "Clonando el repositorio Git..."
+              git clone https://github.com/EdgarC97/CordiSimpleV2 .
             fi
 
-            # Verificar que composer.json esté presente
+            # Verificar que composer.json esté presente antes de instalar dependencias
             if [ -f "composer.json" ]; then
-              # Instalar dependencias de Composer
+              echo "Instalando dependencias de Composer..."
               composer install --no-dev --optimize-autoloader
             else
               echo "Error: No se encontró composer.json en el repositorio"
