@@ -27,16 +27,14 @@ jobs:
       - name: Install Composer dependencies
         run: |
           curl -sS https://getcomposer.org/installer | php
-          php composer.phar install --no-interaction --prefer-dist
+          php composer.phar install --no-interaction --prefer-dist --no-dev --optimize-autoloader
 
       # Paso 4: Instalar dependencias de npm con Node.js 20
       - name: Install Node.js and NPM dependencies
-        run: |
-          curl -sL https://deb.nodesource.com/setup_20.x | sudo bash -  # Instalar Node.js 20 LTS
-          sudo apt-get update
-          sudo apt-get install -y nodejs npm  # Instalar Node.js y npm
-          npm -v  # Verificar si npm está instalado
-          npm install  # Instalar dependencias de npm
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      - run: npm install  # Instalar dependencias de npm
 
       # Paso 5: Generar los activos con Vite
       - name: Build assets with Vite
@@ -46,6 +44,9 @@ jobs:
       # Paso 6: Crear el archivo .env de pruebas con los secretos (si es necesario)
       - name: Set up .env file
         run: |
+          if [ ! -f .env ]; then
+            touch .env
+          fi
           echo "APP_KEY=${{ secrets.APP_KEY }}" >> .env
           echo "DB_CONNECTION=${{ secrets.DB_CONNECTION }}" >> .env
           echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
@@ -65,6 +66,7 @@ jobs:
           PASSWORD: ${{ secrets.PASSWORD }}
         run: |
           # Instalar sshpass para pasar la contraseña
+          sudo apt-get update
           sudo apt-get install -y sshpass
           
           # Verificar la conexión SSH
