@@ -12,6 +12,6 @@ export default defineConfig({
     }),
   ],
   build: {
-    outDir: 'public/build', // Cambia la salida para que esté en public/build
+    outDir: 'public/build', 
   },
 });
