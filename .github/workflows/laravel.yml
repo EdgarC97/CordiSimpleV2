@@ -55,7 +55,7 @@ jobs:
           echo "APP_URL=${{ secrets.APP_URL }}" >> .env
           echo "APP_ENV=production" >> .env  # Cambiar a producción para despliegue
 
-      # Paso 7: Desplegar a Hostinger mediante SSH con contraseña d
+      # Paso 7: Desplegar a Hostinger mediante SSH con contraseña
       - name: Deploy to Hostinger via SSH (with password)
         env:
           HOST: ${{ secrets.HOST }}
@@ -79,18 +79,18 @@ jobs:
           echo "Verificando si estamos en el directorio correcto"
           pwd  # Mostrar el directorio de trabajo actual
 
-          # Comprobar si la ruta existe
+          # Comprobar si la ruta koalacordisimple.jcomtec.com existe
           echo "Comprobando si la ruta koalacordisimple.jcomtec.com existe"
           if [ ! -d "~/koalacordisimple.jcomtec.com" ]; then
-            echo "El directorio no existe. Abortando el despliegue."
-            exit 1
+            echo "El directorio no existe. Clonando el repositorio..."
+            git clone https://github.com/EdgarC97/CordiSimpleV2.git ~/koalacordisimple.jcomtec.com
+          else
+            echo "El directorio ya tiene un repositorio git. Haciendo pull..."
+            cd ~/koalacordisimple.jcomtec.com
+            git pull origin main
           fi
 
-          # Asegurarse de estar en el directorio correcto
-          cd ~/koalacordisimple.jcomtec.com
-
           # Continuar con el despliegue si todo es correcto
-          git pull origin main
           composer install --no-dev --optimize-autoloader
           npm install --production
           npm run build
