@@ -55,7 +55,7 @@ jobs:
           echo "APP_URL=${{ secrets.APP_URL }}" >> .env
           echo "APP_ENV=production" >> .env  # Cambiar a producción para despliegue
 
-      # Paso 7: Desplegar a Hostinger mediante SSH con contraseña
+      # Paso 7: Desplegar a Hostinger mediante SSH con contraseña d
       - name: Deploy to Hostinger via SSH (with password)
         env:
           HOST: ${{ secrets.HOST }}
@@ -79,35 +79,26 @@ jobs:
           echo "Verificando si estamos en el directorio correcto"
           pwd  # Mostrar el directorio de trabajo actual
 
-          # Comprobar si la ruta koalacordisimple.jcomtec.com existe
-          echo "Comprobando si la ruta $HOME/domains/koalacordisimple.jcomtec.com existe"
+          # Comprobar si la ruta existe
+          echo "Comprobando si la ruta koalacordisimple.jcomtec.com existe"
           if [ ! -d "$HOME/domains/koalacordisimple.jcomtec.com" ]; then
-            echo "El directorio no existe. Clonando el repositorio."
-            git clone https://github.com/EdgarC97/CordiSimpleV2.git $HOME/domains/koalacordisimple.jcomtec.com
+            echo "El directorio no existe. Abortando el despliegue."
+            exit 1
           fi
 
           # Asegurarse de estar en el directorio correcto
-          cd $HOME/domains/koalacordisimple.jcomtec.com
-
-          # Actualizar el repositorio
-          git pull origin main  # Asegurarse de tener la última versión del repositorio
+          cd ~/koalacordisimple.jcomtec.com
 
           # Continuar con el despliegue si todo es correcto
-          composer install --no-dev --optimize-autoloader  # Instalar dependencias de PHP
-          npm install --production  # Instalar dependencias de npm
-          npm run build  # Generar los activos
-
-          # Verificar si el archivo .env.example existe
-          if [ ! -f ".env.example" ]; then
-            echo ".env.example no encontrado. Usando un .env predeterminado."
-            cp .env.example .env  # Copiar el archivo .env
-          fi
-
-          # Ejecutar comandos de Laravel
-          php artisan key:generate  # Generar la clave de la aplicación
-          php artisan config:cache  # Limpiar caché de configuración
-          php artisan route:cache  # Limpiar caché de rutas
-          php artisan migrate --force  # Ejecutar migraciones
-          sudo chown -R www-data:www-data storage bootstrap/cache  # Ajustar permisos
+          git pull origin main
+          composer install --no-dev --optimize-autoloader
+          npm install --production
+          npm run build
+          cp .env.example .env
+          php artisan key:generate
+          php artisan config:cache
+          php artisan route:cache
+          php artisan migrate --force
+          sudo chown -R www-data:www-data storage bootstrap/cache
 
           EOF
