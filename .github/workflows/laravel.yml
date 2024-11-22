@@ -55,7 +55,7 @@ jobs:
           echo "APP_URL=${{ secrets.APP_URL }}" >> .env
           echo "APP_ENV=production" >> .env  # Cambiar a producción para despliegue
 
-      # Paso 7: Desplegar a Hostinger mediante SSH con contraseña
+      # Paso 7: Desplegar a Hostinger mediante SSH con contraseña d
       - name: Deploy to Hostinger via SSH (with password)
         env:
           HOST: ${{ secrets.HOST }}
