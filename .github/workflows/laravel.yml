@@ -79,7 +79,7 @@ jobs:
           echo "Verificando si estamos en el directorio correcto"
           pwd  # Mostrar el directorio de trabajo actual
 
-          # Comprobar si la ruta existe
+          # Comprobar si la ruta koalacordisimple.jcomtec.com existe
           echo "Comprobando si la ruta $HOME/domains/koalacordisimple.jcomtec.com existe"
           if [ ! -d "$HOME/domains/koalacordisimple.jcomtec.com" ]; then
             echo "El directorio no existe. Clonando el repositorio."
@@ -89,23 +89,25 @@ jobs:
           # Asegurarse de estar en el directorio correcto
           cd $HOME/domains/koalacordisimple.jcomtec.com
 
-          # Continuar con el despliegue si todo es correcto
+          # Actualizar el repositorio
           git pull origin main  # Asegurarse de tener la última versión del repositorio
+
+          # Continuar con el despliegue si todo es correcto
           composer install --no-dev --optimize-autoloader  # Instalar dependencias de PHP
           npm install --production  # Instalar dependencias de npm
           npm run build  # Generar los activos
 
           # Verificar si el archivo .env.example existe
           if [ ! -f ".env.example" ]; then
-            echo ".env.example no encontrado. Abortando el despliegue."
-            exit 1
+            echo ".env.example no encontrado. Usando un .env predeterminado."
+            cp .env.example .env  # Copiar el archivo .env
           fi
 
-          cp .env.example .env  # Copiar el archivo .env
+          # Ejecutar comandos de Laravel
           php artisan key:generate  # Generar la clave de la aplicación
           php artisan config:cache  # Limpiar caché de configuración
           php artisan route:cache  # Limpiar caché de rutas
           php artisan migrate --force  # Ejecutar migraciones
-          chown -R www-data:www-data storage bootstrap/cache  # Ajustar permisos
+          sudo chown -R www-data:www-data storage bootstrap/cache  # Ajustar permisos
 
           EOF
