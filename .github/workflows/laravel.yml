@@ -81,7 +81,7 @@ jobs:
 
           # Comprobar si la ruta existe
           echo "Comprobando si la ruta ~/domains/koalacordisimple.jcomtec.com/public_html existe"
-          if [ ! -d "~/domains/koalacordisimple.jcomtec.com/public_html" ]; then
+          if [ ! -d "~/domains/koalacordisimple.jcomtec.com" ]; then
             echo "El directorio no existe. Abortando el despliegue."
             exit 1
           fi
