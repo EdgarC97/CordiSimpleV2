@@ -37,6 +37,7 @@ jobs:
     sudo apt-get install -y nodejs  # Instalar Node.js
     sudo apt-get install -y npm   # Instalar npm después de nodejs
 
+
       # Paso 5: Generar los activos con Vite
       - name: Build assets with Vite
         run: |
