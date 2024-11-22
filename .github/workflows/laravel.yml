@@ -31,14 +31,11 @@ jobs:
 
       # Paso 4: Instalar dependencias de npm con Node.js 20
       - name: Install Node.js and NPM dependencies
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install NPM dependencies
         run: |
-          npm ci  # Use npm ci instead of npm install for more reliable installations
+          curl -sL https://deb.nodesource.com/setup_20.x | sudo bash -  # Instalar Node.js 20 LTS
+          sudo apt-get update
+          sudo apt-get install -y nodejs  # Instalar Node.js
+          npm install  # Instalar dependencias de npm
 
       # Paso 5: Generar los activos con Vite
       - name: Build assets with Vite
