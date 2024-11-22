@@ -66,30 +66,15 @@ jobs:
           USERNAME: ${{ secrets.USERNAME }}
           PASSWORD: ${{ secrets.PASSWORD }}
         run: |
-          # Instalar sshpass y npm para asegurar que todo esté disponible
-          sudo apt-get install -y sshpass nodejs npm sudo
-          
-          # Verificar si la conexión SSH funciona correctamente
-          echo "Verificando la conexión SSH con: $USERNAME@$HOST:$PORT"
-          
-          # Conexión SSH usando sshpass (contraseña) y ejecutar el despliegue
           sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no -p $PORT $USERNAME@$HOST << 'EOF'
           
-          # Verificación: Comprobar si la conexión SSH está funcionando correctamente
-          echo "Verificando el usuario actual en el servidor"
-          whoami  # Mostrar el usuario con el que estás conectado
+          # Eliminar directorio existente si está incompleto
+          rm -rf $HOME/domains/koalacordisimple.jcomtec.com
 
-          echo "Verificando si estamos en el directorio correcto"
-          pwd  # Mostrar el directorio de trabajo actual
+          # Clonar explícitamente el repositorio
+          git clone https://github.com/EdgarC97/CordiSimpleV2.git $HOME/domains/koalacordisimple.jcomtec.com
 
-          # Comprobar si la ruta koalacordisimple.jcomtec.com existe
-          echo "Comprobando si la ruta $HOME/domains/koalacordisimple.jcomtec.com existe"
-          if [ ! -d "$HOME/domains/koalacordisimple.jcomtec.com" ]; then
-            echo "El directorio no existe. Clonando el repositorio."
-            git clone https://github.com/EdgarC97/CordiSimpleV2.git $HOME/domains/koalacordisimple.jcomtec.com
-          fi
-
-          # Asegurarse de estar en el directorio correcto
+          # Ir al directorio del repositorio
           cd $HOME/domains/koalacordisimple.jcomtec.com
 
           # Verificar si el repositorio se clonó correctamente
