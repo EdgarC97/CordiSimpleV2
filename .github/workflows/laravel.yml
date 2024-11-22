@@ -37,12 +37,19 @@ jobs:
           sudo apt-get upgrade -y
           sudo apt-get autoremove -y  # Eliminar paquetes no necesarios
           sudo apt-get clean  # Limpiar el caché de apt
+          sudo apt-get install -f  # Intentar corregir dependencias rotas
 
           # Instalar Node.js y npm
           curl -sL https://deb.nodesource.com/setup_20.x | sudo bash -  # Instalar Node.js 20 LTS
           sudo apt-get install -y nodejs  # Instalar Node.js
-          sudo apt-get install --reinstall -y npm  # Reinstalar npm
-          npm install  # Instalar dependencias de npm
+          sudo apt-get install --reinstall -y npm  # Reinstalar npm (para evitar posibles problemas de configuración)
+
+          # Instalar dependencias de npm usando --legacy-peer-deps para evitar conflictos de dependencias
+          npm install --legacy-peer-deps  # Usar legacy-peer-deps para evitar conflictos de dependencias
+
+          # Verificar la versión de nodejs y npm
+          node -v  # Verificar la versión de Node.js
+          npm -v   # Verificar la versión de npm
 
       # Paso 5: Generar los activos con Vite
       - name: Build assets with Vite
@@ -113,7 +120,7 @@ jobs:
           # Verificar si el archivo .env.example existe
           if [ ! -f ".env.example" ]; then
             echo ".env.example no encontrado. Usando un .env predeterminado."
-            cp .env .env  # Usar .env si no existe el archivo .env.example
+            cp .env.example .env  # Copiar el archivo .env
           fi
 
           # Ejecutar comandos de Laravel
