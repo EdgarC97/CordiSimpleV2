@@ -63,8 +63,8 @@ jobs:
           USERNAME: ${{ secrets.USERNAME }}
           PASSWORD: ${{ secrets.PASSWORD }}
         run: |
-          # Instalar sshpass para pasar la contraseña
-          sudo apt-get install -y sshpass
+          # Instalar sshpass y npm para asegurar que todo esté disponible
+          sudo apt-get install -y sshpass nodejs npm sudo
           
           # Verificar si la conexión SSH funciona correctamente
           echo "Verificando la conexión SSH con: $USERNAME@$HOST:$PORT"
@@ -80,25 +80,45 @@ jobs:
           pwd  # Mostrar el directorio de trabajo actual
 
           # Comprobar si la ruta koalacordisimple.jcomtec.com existe
-          echo "Comprobando si la ruta koalacordisimple.jcomtec.com existe"
-          if [ ! -d "~/koalacordisimple.jcomtec.com" ]; then
-            echo "El directorio no existe. Clonando el repositorio..."
-            git clone https://github.com/EdgarC97/CordiSimpleV2.git ~/koalacordisimple.jcomtec.com
-          else
-            echo "El directorio ya tiene un repositorio git. Haciendo pull..."
-            cd ~/koalacordisimple.jcomtec.com
-            git pull origin main
+          echo "Comprobando si la ruta $HOME/domains/koalacordisimple.jcomtec.com existe"
+          if [ ! -d "$HOME/domains/koalacordisimple.jcomtec.com" ]; then
+            echo "El directorio no existe. Clonando el repositorio."
+            git clone https://github.com/EdgarC97/CordiSimpleV2.git $HOME/domains/koalacordisimple.jcomtec.com
           fi
 
+          # Asegurarse de estar en el directorio correcto
+          cd $HOME/domains/koalacordisimple.jcomtec.com
+
+          # Verificar si el repositorio se clonó correctamente
+          if [ ! -d ".git" ]; then
+            echo "El directorio no es un repositorio Git. Abortando despliegue."
+            exit 1
+          fi
+
+          # Actualizar el repositorio
+          git pull origin main  # Asegurarse de tener la última versión del repositorio
+
           # Continuar con el despliegue si todo es correcto
-          composer install --no-dev --optimize-autoloader
-          npm install --production
-          npm run build
-          cp .env.example .env
-          php artisan key:generate
-          php artisan config:cache
-          php artisan route:cache
-          php artisan migrate --force
-          sudo chown -R www-data:www-data storage bootstrap/cache
+          composer install --no-dev --optimize-autoloader  # Instalar dependencias de PHP
+          npm install --production  # Instalar dependencias de npm
+          npm run build  # Generar los activos
+
+          # Verificar si el archivo .env.example existe
+          if [ ! -f ".env.example" ]; then
+            echo ".env.example no encontrado. Usando un .env predeterminado."
+            cp .env.example .env  # Copiar el archivo .env
+          fi
+
+          # Ejecutar comandos de Laravel
+          if [ -f "artisan" ]; then
+            php artisan key:generate  # Generar la clave de la aplicación
+            php artisan config:cache  # Limpiar caché de configuración
+            php artisan route:cache  # Limpiar caché de rutas
+            php artisan migrate --force  # Ejecutar migraciones
+            sudo chown -R www-data:www-data storage bootstrap/cache  # Ajustar permisos
+          else
+            echo "No se encontró el archivo artisan. Abortando despliegue."
+            exit 1
+          fi
 
           EOF
