@@ -80,18 +80,14 @@ jobs:
           pwd  # Mostrar el directorio de trabajo actual
 
           # Comprobar si la ruta existe
-          echo "Comprobando si la ruta ~/domains/koalacordisimple.jcomtec.com/public_html existe"
+          echo "Comprobando si la ruta ~/domains/koalacordisimple.jcomtec.com existe"
           if [ ! -d "~/domains/koalacordisimple.jcomtec.com" ]; then
             echo "El directorio no existe. Abortando el despliegue."
             exit 1
           fi
 
           # Asegurarse de estar en el directorio correcto
-          cd ~/domains/koalacordisimple.jcomtec.com/public_html
-
-          # Verificar los permisos del directorio
-          echo "Verificando permisos del directorio public_html"
-          ls -la
+          cd ~/domains/koalacordisimple.jcomtec.com
 
           # Continuar con el despliegue si todo es correcto
           git pull origin main
