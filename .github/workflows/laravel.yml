@@ -29,19 +29,24 @@ jobs:
           curl -sS https://getcomposer.org/installer | php
           php composer.phar install --no-interaction --prefer-dist
 
-      # Paso 4: Instalar Node.js y NPM dependencias
+      # Paso 4: Instalar dependencias de npm con Node.js 20
       - name: Install Node.js and NPM dependencies
         run: |
+          # Actualizar los repositorios y limpiar el sistema
+          sudo apt-get update -y
+          sudo apt-get upgrade -y
+          sudo apt-get autoremove -y  # Eliminar paquetes no necesarios
+          sudo apt-get clean  # Limpiar el caché de apt
+
           # Instalar Node.js y npm
           curl -sL https://deb.nodesource.com/setup_20.x | sudo bash -  # Instalar Node.js 20 LTS
-          sudo apt-get update
           sudo apt-get install -y nodejs  # Instalar Node.js
-          sudo apt-get install -y npm  # Reinstalar npm para corregir el problema de dependencias
+          sudo apt-get install --reinstall -y npm  # Reinstalar npm
+          npm install  # Instalar dependencias de npm
 
       # Paso 5: Generar los activos con Vite
       - name: Build assets with Vite
         run: |
-          npm install  # Instalar dependencias de npm
           npm run build  # Esto generará el archivo manifest.json en /public/build
 
       # Paso 6: Crear el archivo .env de pruebas con los secretos (si es necesario)
@@ -108,7 +113,7 @@ jobs:
           # Verificar si el archivo .env.example existe
           if [ ! -f ".env.example" ]; then
             echo ".env.example no encontrado. Usando un .env predeterminado."
-            cp .env.example .env  # Copiar el archivo .env
+            cp .env .env  # Usar .env si no existe el archivo .env.example
           fi
 
           # Ejecutar comandos de Laravel
