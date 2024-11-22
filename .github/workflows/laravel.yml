@@ -23,34 +23,29 @@ jobs:
         with:
           php-version: '8.2'
 
-      # Paso 3: Actualizar Composer
-      - name: Upgrade Composer
+      # Paso 3: Instalar dependencias de Composer
+      - name: Install Composer dependencies
         run: |
-          php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-          php composer-setup.php --version=2.6.5
-          php -r "unlink('composer-setup.php');"
-          sudo mv composer.phar /usr/local/bin/composer
-          composer --version
+          curl -sS https://getcomposer.org/installer | php
+          php composer.phar install --no-interaction --prefer-dist
 
-      # Paso 4: Configurar Node.js
-      - name: Set up Node.js
+      # Paso 4: Instalar dependencias de npm con Node.js 20
+      - name: Install Node.js and NPM dependencies
         uses: actions/setup-node@v3
         with:
           node-version: '20'
           cache: 'npm'
 
-      # Paso 5: Instalar dependencias
-      - name: Install Composer dependencies
-        run: composer install --no-interaction --prefer-dist
-
       - name: Install NPM dependencies
-        run: npm ci
+        run: |
+          npm ci  # Use npm ci instead of npm install for more reliable installations
 
-      # Paso 6: Generar activos
-      - name: Build assets
-        run: npm run build
+      # Paso 5: Generar los activos con Vite
+      - name: Build assets with Vite
+        run: |
+          npm run build  # Esto generará el archivo manifest.json en /public/build
 
-      # Paso 7: Crear archivo .env
+      # Paso 6: Crear el archivo .env de pruebas con los secretos (si es necesario)
       - name: Set up .env file
         run: |
           echo "APP_KEY=${{ secrets.APP_KEY }}" >> .env
@@ -61,54 +56,72 @@ jobs:
           echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
           echo "APP_URL=${{ secrets.APP_URL }}" >> .env
-          echo "APP_ENV=production" >> .env
+          echo "APP_ENV=production" >> .env  # Cambiar a producción para despliegue
 
-      # Paso 8: Desplegar a Hostinger
-      - name: Deploy to Hostinger via SSH
+      # Paso 7: Desplegar a Hostinger mediante SSH con contraseña
+      - name: Deploy to Hostinger via SSH (with password)
         env:
           HOST: ${{ secrets.HOST }}
           PORT: ${{ secrets.PORT }}
           USERNAME: ${{ secrets.USERNAME }}
           PASSWORD: ${{ secrets.PASSWORD }}
         run: |
-          sudo apt-get update
-          sudo apt-get install -y sshpass
+          # Instalar sshpass y npm para asegurar que todo esté disponible
+          sudo apt-get install -y sshpass nodejs npm sudo
           
+          # Verificar si la conexión SSH funciona correctamente
+          echo "Verificando la conexión SSH con: $USERNAME@$HOST:$PORT"
+          
+          # Conexión SSH usando sshpass (contraseña) y ejecutar el despliegue
           sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no -p $PORT $USERNAME@$HOST << 'EOF'
           
-          # Asegurar herramientas
-          which git || sudo apt-get install -y git
-          which composer || (curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer)
-          
-          # Preparar directorio
-          mkdir -p $HOME/domains/koalacordisimple.jcomtec.com
-          cd $HOME/domains/koalacordisimple.jcomtec.com
+          # Verificación: Comprobar si la conexión SSH está funcionando correctamente
+          echo "Verificando el usuario actual en el servidor"
+          whoami  # Mostrar el usuario con el que estás conectado
 
-          # Clonar o actualizar repositorio
-          if [ ! -d ".git" ]; then
-            git clone https://github.com/EdgarC97/CordiSimpleV2.git .
-          else
-            git pull origin main
+          echo "Verificando si estamos en el directorio correcto"
+          pwd  # Mostrar el directorio de trabajo actual
+
+          # Comprobar si la ruta koalacordisimple.jcomtec.com existe
+          echo "Comprobando si la ruta $HOME/domains/koalacordisimple.jcomtec.com existe"
+          if [ ! -d "$HOME/domains/koalacordisimple.jcomtec.com" ]; then
+            echo "El directorio no existe. Clonando el repositorio."
+            git clone https://github.com/EdgarC97/CordiSimpleV2.git $HOME/domains/koalacordisimple.jcomtec.com
           fi
 
-          # Instalar dependencias
-          composer install --no-dev --optimize-autoloader
-          
-          # Configurar Node.js
-          curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-          sudo apt-get install -y nodejs
-          
-          # Instalar y construir dependencias npm
-          npm ci
-          npm run build
+          # Asegurarse de estar en el directorio correcto
+          cd $HOME/domains/koalacordisimple.jcomtec.com
 
-          # Comandos de Laravel
-          php artisan key:generate
-          php artisan config:cache
-          php artisan route:cache
-          php artisan migrate --force
+          # Verificar si el repositorio se clonó correctamente
+          if [ ! -d ".git" ]; then
+            echo "El directorio no es un repositorio Git. Abortando despliegue."
+            exit 1
+          fi
 
-          # Ajustar permisos
-          sudo chown -R www-data:www-data storage bootstrap/cache
-          
+          # Actualizar el repositorio
+          git pull origin main  # Asegurarse de tener la última versión del repositorio
+
+          # Continuar con el despliegue si todo es correcto
+          composer install --no-dev --optimize-autoloader  # Instalar dependencias de PHP
+          npm install --production  # Instalar dependencias de npm
+          npm run build  # Generar los activos
+
+          # Verificar si el archivo .env.example existe
+          if [ ! -f ".env.example" ]; then
+            echo ".env.example no encontrado. Usando un .env predeterminado."
+            cp .env.example .env  # Copiar el archivo .env
+          fi
+
+          # Ejecutar comandos de Laravel
+          if [ -f "artisan" ]; then
+            php artisan key:generate  # Generar la clave de la aplicación
+            php artisan config:cache  # Limpiar caché de configuración
+            php artisan route:cache  # Limpiar caché de rutas
+            php artisan migrate --force  # Ejecutar migraciones
+            sudo chown -R www-data:www-data storage bootstrap/cache  # Ajustar permisos
+          else
+            echo "No se encontró el archivo artisan. Abortando despliegue."
+            exit 1
+          fi
+
           EOF
